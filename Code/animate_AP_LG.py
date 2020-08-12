@@ -8,10 +8,11 @@ import tkinter as tk
 from PIL import Image, ImageDraw, ImageTk
 import math
 import numpy as np
-import threading
 import time
 import antipattern as ap
 import life_game as lgm
+from datetime import datetime
+import os
 
 
 class App():
@@ -76,7 +77,15 @@ class App():
             self.dict_active[button_text] = True
         self.lifegame.set_neighbours(self.dict_active)
 
-
+    def pressed_shuffle(self):
+        if self.shuffle:
+            self.button_shuffle.configure(relief=tk.RAISED)
+            self.shuffle = False
+            
+        else:
+            self.button_shuffle.configure(relief=tk.SUNKEN)
+            self.shuffle = True
+        
 
 
     def init_UI(self):
@@ -226,6 +235,18 @@ class App():
         # init antipattern
         self.init_lifegame = tk.Button(self.frame_controls, text="initialize lifegame", command=self.init_lifegame)
         self.init_lifegame.grid(column=1, row=16, sticky='w')
+        
+        # Shuffle
+        self.shuffle = False
+        self.button_shuffle = tk.Button(self.frame_controls, text="shuffle")
+        self.button_shuffle.configure(command=self.pressed_shuffle)
+        self.button_shuffle.configure(relief=tk.RAISED)
+        self.button_shuffle.grid(column=1, row=20, sticky='w')
+        
+        # save
+        self.button_save = tk.Button(self.frame_controls, text="save")
+        self.button_save.configure(command=self.save_image)
+        self.button_save.grid(column=1, row=21, sticky='w')
 
     def pressed_edges_connect(self):
         if self.lifegame.edges_connect:
@@ -274,7 +295,7 @@ class App():
         if cell_size != '':
             self.cell_size = int(cell_size)
         else:
-            self.cell_size = 5
+            self.cell_size = 4
 
         cell_margin = self.txt_cell_margin.get()
         if cell_margin != '':
@@ -285,8 +306,9 @@ class App():
     def init_lifegame(self):
         self.read_values()
         anti_pattern = ap.AntiPattern(self.n)
+        print(self.shuffle)
         smallMatrix = anti_pattern.createMatrix(
-            n_patterns_power_horizontal = self.n_patterns_power_horizontal)
+            n_patterns_power_horizontal = self.n_patterns_power_horizontal, shuffle  =  self.shuffle)
         # smallMatrix = [[]]
         smallArray = np.array(smallMatrix)
         if (self.columns == 0) or (self.rows == 0):
@@ -341,6 +363,12 @@ class App():
     def do_stop(self):
         self.stop = True
 
+    def save_image(self):
+        image_to_save = self.lifegame.createGrid(cell_size=1)
+        path = r'D:\My documents\Python\images'
+        image_name = f'n={self.n}_n_hori={self.n_patterns_power_horizontal}_{datetime.now():%Y_%m_%d_%H_%M_%S.%f}.bmp'
+        image_to_save.save(os.path.join(path,image_name))
+        
 
     def next_step(self):
         self.lifegame.next_step()

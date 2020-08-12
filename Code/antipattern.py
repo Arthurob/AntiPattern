@@ -149,6 +149,8 @@ class AntiPattern:
         matrix = [[0 for j in range(self.n_shafts)] for  i in range(self.n_rows)]
         # print(f'number of shafts:{n_shafts}')
         # print(n_rows)
+        if shuffle:
+            random.shuffle(self.combis)
         combis = [self.combis[i:i + self.n_patterns_horizontal]
                   for i in range(0, len(self.combis), self.n_patterns_horizontal)]
         # Fix tuples have only 1 element
