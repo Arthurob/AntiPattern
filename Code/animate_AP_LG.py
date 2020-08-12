@@ -8,10 +8,12 @@ import tkinter as tk
 from PIL import Image, ImageDraw, ImageTk
 import math
 import numpy as np
-import threading
 import time
 import antipattern as ap
 import life_game as lgm
+from functools import partial
+from datetime import datetime
+import os
 
 
 class App():
@@ -40,6 +42,158 @@ class App():
         self.loop()
         self.root.mainloop()
 
+    def init_UI(self):
+        # Animation frames
+        print(self.width, self.height)
+        self.frame_animation = tk.Frame(self.root, width=(self.width-100), height=self.height)
+        self.frame_animation.grid(row=0, column=0, sticky='nw')
+        self.root.grid_columnconfigure(0, weight = 1)
+        # canvas
+        self.canvas_width = self.width-100
+        self.canvas = tk.Canvas(self.frame_animation, width=self.canvas_width, height=self.height, bg="gray")
+        self.canvas.grid(column=0, row=0)
+        
+        self.UI_animation()
+        self.UI_anti_pattern()
+        self.UI_lifegame()
+        self.UI_size()
+
+    def UI_animation(self):
+        # controls frame
+        self.frame_controls = tk.Frame(self.root, width=100, height=self.height)
+        self.frame_controls.grid(row=0, column=1, sticky='nw')
+        # play
+        self.play = tk.Button(self.frame_controls, text="play", command=self.do_play)
+        self.play.grid(column=0, row=0, sticky='w')
+        # Pause
+        self.pause = tk.Button(self.frame_controls, text="pause", command=self.do_pause)
+        self.pause.grid(column=1, row=0, sticky='w')
+        # Speed
+        self.delay_slider = tk.Scale(
+            self.frame_controls, from_=0, to=.75, resolution=.01, orient=tk.HORIZONTAL, variable=self.delay)
+        self.delay_slider.grid(column=3, row=0, sticky='w')
+        
+    def UI_n_neighbours(self):
+        # self.n_neighbours = ["1", "2","3","4","5", "6","7", "8"]
+        
+        pos_center = [17,1]
+              
+        self.buttons_alive = []
+        self.buttons_dead = []
+       
+         # Create neighbours buttons
+        for index in range(1,9):
+            row, column = list(map(sum, zip(pos_center, [int(index/5), index%5])))
+            self.buttons_alive.append(tk.Button(self.frame_controls, text=str(index)))
+            # self.dict_buttons[neighbour].configure(command=partial(self.pressed_neighbour, neighbour))
+            self.buttons_alive[index-1].grid(row=row, column=column, sticky='w')
+            # self.dict_buttons[neighbour].configure(relief=tk.SUNKEN)
+
+    def UI_neighbours_buttons(self):
+         self.strings_neighbours = ["upper_left", "above","upper_right","right",
+                                   "lower_right", "below","lower_left", "left"]
+        
+         neighbours_buttons_rel_pos = [[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1],[0,-1]]
+         pos_center = [13,2]
+        
+         self.dict_active = dict([[string,True] for string in self.strings_neighbours])
+         print(self.dict_active)
+       
+         self.dict_buttons = {}
+       
+         # Create neighbours buttons
+         for index, neighbour in enumerate(self.strings_neighbours):
+            row, column = list(map(sum, zip(pos_center, neighbours_buttons_rel_pos[index])))
+            self.dict_buttons[neighbour] = tk.Button(self.frame_controls, text=neighbour)
+            self.dict_buttons[neighbour].configure(command=partial(self.pressed_neighbour, neighbour))
+            self.dict_buttons[neighbour].grid(row=row, column=column, sticky='w')
+            self.dict_buttons[neighbour].configure(relief=tk.SUNKEN)
+
+
+    def UI_lifegame(self):
+        self.UI_n_neighbours()
+        self.UI_neighbours_buttons()
+        
+        # Shuffle
+        self.button_shuffle = tk.Button(self.frame_controls, text="shuffle")
+        self.button_shuffle.configure(command=self.pressed_shuffle)
+        self.button_shuffle.configure(relief=tk.RAISED)
+        self.button_shuffle.grid(column=1, row=20, sticky='w')
+        
+        # edges connect
+        self.button_edges_connect = tk.Button(self.frame_controls, text="edges connect")
+        self.button_edges_connect.configure(command=self.pressed_edges_connect)
+        self.button_edges_connect.configure(relief=tk.RAISED)
+        self.button_edges_connect.grid(column=1, row=15, sticky='w')
+        self.edges_connect = False
+        
+        # save
+        self.button_save = tk.Button(self.frame_controls, text="save")
+        self.button_save.configure(command=self.save_image)
+        self.button_save.grid(column=1, row=21, sticky='w')
+
+
+    def UI_n(self):
+         # n
+        self.lbl_n = tk.Label(self.frame_controls, text="n = ")
+        self.lbl_n.grid(column=0, row=4, sticky='e')
+
+        self.button_nis2 = tk.Button(self.frame_controls, text="2")
+        self.button_nis2.configure(command=lambda button = self.button_nis2: self.pressed_n(button))
+        self.button_nis2.grid(column=2, row=4, sticky='w')
+
+        self.button_nis3 = tk.Button(self.frame_controls, text="3")
+        self.button_nis3.configure(command=lambda button = self.button_nis3: self.pressed_n(button))
+        self.button_nis3.grid(column=3, row=4, sticky='w')
+
+        self.button_nis4 = tk.Button(self.frame_controls, text="4")
+        self.button_nis4.configure(command=lambda button = self.button_nis4: self.pressed_n(button))
+        self.button_nis4.grid(column=4, row=4, sticky='w')
+
+    def UI_anti_pattern(self):
+        self.UI_n()
+        
+         # n_patterns_power_horizontal
+        self.lbl_n_patterns_power_horizontal = tk.Label(self.frame_controls, text="n powers horizontal = ")
+        self.lbl_n_patterns_power_horizontal.grid(column=1, row=5, sticky='w')
+        self.txt_n_patterns_power_horizontal = tk.Entry(self.frame_controls, width=5)
+        self.txt_n_patterns_power_horizontal.grid(column=2, row=5, sticky='w')
+        
+        # Shuffle
+        self.shuffle = False
+        self.button_shuffle = tk.Button(self.frame_controls, text="shuffle")
+        self.button_shuffle.configure(command=self.pressed_shuffle)
+        self.button_shuffle.configure(relief=tk.RAISED)
+        self.button_shuffle.grid(column=1, row=20, sticky='w')
+                # init antipattern
+        self.init_lifegame = tk.Button(self.frame_controls, text="initialize lifegame", command=self.init_lifegame)
+        self.init_lifegame.grid(column=1, row=16, sticky='w')
+
+
+    def UI_size(self):
+
+    # rows
+        self.lbl_rows = tk.Label(self.frame_controls, text="rows = ")
+        self.lbl_rows.grid(column=1, row=6, sticky='w')
+        self.txt_rows = tk.Entry(self.frame_controls, width=5)
+        self.txt_rows.grid(column=2, row=6, sticky='w')
+        # Columns
+        self.lbl_columns = tk.Label(self.frame_controls,text="columns = ")
+        self.lbl_columns.grid(column=1, row=7, sticky='w')
+        self.txt_columns = tk.Entry(self.frame_controls, width=5)
+        self.txt_columns.grid(column=2, row=7, sticky='w')
+
+        # margin
+        self.lbl_cell_margin = tk.Label(self.frame_controls,text="cell margin = ")
+        self.lbl_cell_margin.grid(column=1, row=8, sticky='w')
+        self.txt_cell_margin = tk.Entry(self.frame_controls, width=5)
+        self.txt_cell_margin.grid(column=2, row=8, sticky='w')
+
+        # cell  size
+        self.lbl_cell_size = tk.Label(self.frame_controls,text="cell size = ")
+        self.lbl_cell_size.grid(column=1, row=9, sticky='w')
+        self.txt_cell_size = tk.Entry(self.frame_controls, width=5)
+        self.txt_cell_size.grid(column=2, row=9, sticky='w')
 
     def pressed_n(self, button):
 
@@ -67,7 +221,10 @@ class App():
         print(self.n)
 
 
-    def pressed_neigbour(self, button_text):
+    def pressed_neighbour(self, button_text):
+        print(button_text)
+        print(self.dict_buttons[button_text])
+        print(self.dict_active[button_text])
         if self.dict_active[button_text]:
             self.dict_buttons[button_text].configure(relief=tk.RAISED)
             self.dict_active[button_text] = False
@@ -75,157 +232,6 @@ class App():
             self.dict_buttons[button_text].configure(relief=tk.SUNKEN)
             self.dict_active[button_text] = True
         self.lifegame.set_neighbours(self.dict_active)
-
-
-
-
-    def init_UI(self):
-        # Animation frames
-        print(self.width, self.height)
-        self.frame_animation = tk.Frame(self.root, width=(self.width-100), height=self.height)
-        self.frame_animation.grid(row=0, column=0, sticky='nw')
-        self.root.grid_columnconfigure(0, weight = 1)
-        # canvas
-        self.canvas_width = self.width-100
-        self.canvas = tk.Canvas(self.frame_animation, width=self.canvas_width, height=self.height, bg="gray")
-        self.canvas.grid(column=0, row=0)
-
-        # controls frame
-        self.frame_controls = tk.Frame(self.root, width=100, height=self.height)
-        self.frame_controls.grid(row=0, column=1, sticky='nw')
-        # play
-        self.play = tk.Button(self.frame_controls, text="play", command=self.do_play)
-        self.play.grid(column=0, row=0, sticky='w')
-        # Pause
-        self.pause = tk.Button(self.frame_controls, text="pause", command=self.do_pause)
-        self.pause.grid(column=1, row=0, sticky='w')
-        # Speed
-        self.delay_slider = tk.Scale(
-            self.frame_controls, from_=0, to=.75, resolution=.01, orient=tk.HORIZONTAL, variable=self.delay)
-        self.delay_slider.grid(column=3, row=0, sticky='w')
-        # n
-        self.lbl_n = tk.Label(self.frame_controls, text="n = ")
-        self.lbl_n.grid(column=0, row=4, sticky='e')
-
-        self.button_nis2 = tk.Button(self.frame_controls, text="2")
-        self.button_nis2.configure(command=lambda button = self.button_nis2: self.pressed_n(button))
-        self.button_nis2.grid(column=2, row=4, sticky='w')
-
-        self.button_nis3 = tk.Button(self.frame_controls, text="3")
-        self.button_nis3.configure(command=lambda button = self.button_nis3: self.pressed_n(button))
-        self.button_nis3.grid(column=3, row=4, sticky='w')
-
-        self.button_nis4 = tk.Button(self.frame_controls, text="4")
-        self.button_nis4.configure(command=lambda button = self.button_nis4: self.pressed_n(button))
-        self.button_nis4.grid(column=4, row=4, sticky='w')
-
-        # n_patterns_power_horizontal
-        self.lbl_n_patterns_power_horizontal = tk.Label(self.frame_controls, text="n powers horizontal = ")
-        self.lbl_n_patterns_power_horizontal.grid(column=1, row=5, sticky='w')
-        self.txt_n_patterns_power_horizontal = tk.Entry(self.frame_controls, width=5)
-        self.txt_n_patterns_power_horizontal.grid(column=2, row=5, sticky='w')
-
-        # rows
-        self.lbl_rows = tk.Label(self.frame_controls, text="rows = ")
-        self.lbl_rows.grid(column=1, row=6, sticky='w')
-        self.txt_rows = tk.Entry(self.frame_controls, width=5)
-        self.txt_rows.grid(column=2, row=6, sticky='w')
-        # Columns
-        self.lbl_columns = tk.Label(self.frame_controls,text="columns = ")
-        self.lbl_columns.grid(column=1, row=7, sticky='w')
-        self.txt_columns = tk.Entry(self.frame_controls, width=5)
-        self.txt_columns.grid(column=2, row=7, sticky='w')
-
-        # margin
-        self.lbl_cell_margin = tk.Label(self.frame_controls,text="cell margin = ")
-        self.lbl_cell_margin.grid(column=1, row=8, sticky='w')
-        self.txt_cell_margin = tk.Entry(self.frame_controls, width=5)
-        self.txt_cell_margin.grid(column=2, row=8, sticky='w')
-
-        # cell  size
-        self.lbl_cell_size = tk.Label(self.frame_controls,text="cell size = ")
-        self.lbl_cell_size.grid(column=1, row=9, sticky='w')
-        self.txt_cell_size = tk.Entry(self.frame_controls, width=5)
-        self.txt_cell_size.grid(column=2, row=9, sticky='w')
-
-        # neighbours_cell_alive
-        self.lbl_neighbours_cell_alive = tk.Label(self.frame_controls,text="neighbours cell alive = ")
-        self.lbl_neighbours_cell_alive.grid(column=1, row=10, sticky='w')
-        self.txt_neighbours_cell_alive_min = tk.Entry(self.frame_controls, width=5)
-        self.txt_neighbours_cell_alive_min.grid(column=2, row=10, sticky='w')
-        self.txt_neighbours_cell_alive_max = tk.Entry(self.frame_controls, width=5)
-        self.txt_neighbours_cell_alive_max.grid(column=3, row=10, sticky='w')
-
-        # neighbours_cell_dead
-        self.lbl_neighbours_cell_dead = tk.Label(self.frame_controls,text="neighbours cell dead = ")
-        self.lbl_neighbours_cell_dead.grid(column=1, row=11, sticky='w')
-        self.txt_neighbours_cell_dead_min = tk.Entry(self.frame_controls, width=5)
-        self.txt_neighbours_cell_dead_min.grid(column=2, row=11, sticky='w')
-        self.txt_neighbours_cell_dead_max = tk.Entry(self.frame_controls, width=5)
-        self.txt_neighbours_cell_dead_max.grid(column=3, row=11, sticky='w')
-
-        # Neighbours contributing to # of neigbouring cells
-
-        #upper left
-        self.button_upper_left = tk.Button(self.frame_controls, text="upper_left")
-        self.button_upper_left.configure(command=lambda button = self.button_upper_left: self.pressed_neigbour("upper_left"))
-        self.button_upper_left.grid(column=1, row=12, sticky='w')
-        self.button_upper_left.configure(relief=tk.SUNKEN)
-
-        self.button_above = tk.Button(self.frame_controls, text="above")
-        self.button_above.configure(command=lambda button = self.button_above: self.pressed_neigbour("above"))
-        self.button_above.grid(column=2, row=12, sticky='w')
-        self.button_above.configure(relief=tk.SUNKEN)
-
-        self.button_upper_right = tk.Button(self.frame_controls, text="upper_right")
-        self.button_upper_right.configure(command=lambda button = self.button_upper_right: self.pressed_neigbour("upper_right"))
-        self.button_upper_right.grid(column=3, row=12, sticky='w')
-        self.button_upper_right.configure(relief=tk.SUNKEN)
-
-        self.button_right = tk.Button(self.frame_controls, text="right")
-        self.button_right.configure(command=lambda button = self.button_right: self.pressed_neigbour("right"))
-        self.button_right.grid(column=3, row=13, sticky='w')
-        self.button_right.configure(relief=tk.SUNKEN)
-
-        self.button_lower_right = tk.Button(self.frame_controls, text="lower_right")
-        self.button_lower_right.configure(command=lambda button = self.button_lower_right: self.pressed_neigbour("lower_right"))
-        self.button_lower_right.grid(column=3, row=14, sticky='w')
-        self.button_lower_right.configure(relief=tk.SUNKEN)
-
-        self.button_below = tk.Button(self.frame_controls, text="below")
-        self.button_below.configure(command=lambda button = self.button_below: self.pressed_neigbour("below"))
-        self.button_below.grid(column=2, row=14, sticky='w')
-        self.button_below.configure(relief=tk.SUNKEN)
-
-        self.button_lower_left = tk.Button(self.frame_controls, text="lower_left")
-        self.button_lower_left.configure(command=lambda button = self.button_lower_left: self.pressed_neigbour("lower_left"))
-        self.button_lower_left.grid(column=1, row=14, sticky='w')
-        self.button_lower_left.configure(relief=tk.SUNKEN)
-
-        self.button_left = tk.Button(self.frame_controls, text="left")
-        self.button_left.configure(command=lambda button = self.button_left: self.pressed_neigbour("left"))
-        self.button_left.grid(column=1, row=13, sticky='w')
-        self.button_left.configure(relief=tk.SUNKEN)
-
-
-        self.dict_buttons = {"upper_left": self.button_upper_left, "above": self.button_above,"upper_right": self.button_upper_right,
-                        "right": self.button_right, "lower_right": self.button_lower_right, "below": self.button_below,
-                        "lower_left": self.button_lower_left, "left": self.button_left}
-
-        self.dict_active = {"upper_left": True, "above": True,"upper_right": True,
-                        "right": True, "lower_right": True, "below": True,
-                        "lower_left": True, "left": True}
-
-        # edges connect
-        self.button_edges_connect = tk.Button(self.frame_controls, text="edges connect")
-        self.button_edges_connect.configure(command=self.pressed_edges_connect)
-        self.button_edges_connect.configure(relief=tk.RAISED)
-        self.button_edges_connect.grid(column=1, row=15, sticky='w')
-        self.edges_connect = False
-
-        # init antipattern
-        self.init_lifegame = tk.Button(self.frame_controls, text="initialize lifegame", command=self.init_lifegame)
-        self.init_lifegame.grid(column=1, row=16, sticky='w')
 
     def pressed_edges_connect(self):
         if self.lifegame.edges_connect:
@@ -236,6 +242,21 @@ class App():
             self.button_edges_connect.configure(relief=tk.SUNKEN)
             self.edges_connect = True
         self.lifegame.edges_connect = self.edges_connect
+
+    def pressed_shuffle(self):
+        if self.lifegame.shuffle:
+            self.button_shuffle.configure(relief=tk.RAISED)
+            self.shuffle = False
+            
+        else:
+            self.button_shuffle.configure(relief=tk.SUNKEN)
+            self.shuffle = True
+
+    def save_image(self):
+        image_to_save = self.lifegame.createGrid(cell_size=1)
+        path = r'D:\My documents\Python\images'
+        image_name = f'n={self.n}_n_hori={self.n_patterns_power_horizontal}_{datetime.now():%Y_%m_%d_%H_%M_%S.%f}.bmp'
+        image_to_save.save(os.path.join(path,image_name))
 
     def read_values(self):
         # columns
@@ -286,7 +307,7 @@ class App():
         self.read_values()
         anti_pattern = ap.AntiPattern(self.n)
         smallMatrix = anti_pattern.createMatrix(
-            n_patterns_power_horizontal = self.n_patterns_power_horizontal)
+            n_patterns_power_horizontal = self.n_patterns_power_horizontal, shuffle  =  self.shuffle)
         # smallMatrix = [[]]
         smallArray = np.array(smallMatrix)
         if (self.columns == 0) or (self.rows == 0):
