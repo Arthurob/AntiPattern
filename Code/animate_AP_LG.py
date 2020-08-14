@@ -27,7 +27,8 @@ class App():
         self.root = tk.Tk()
         self.width = self.root.winfo_screenwidth()
         self.height = self.root.winfo_screenheight()
-        self.root.minsize(width=str(self.width), height=str(self.height))
+        # self.root.minsize(width=str(self.width), height=str(self.height))
+        self.root.geometry("900x600")
         # self.minsize(1000,800)
         # self.root.geometry("1150x800")
         # self.root.attributes('-fullscreen', True)
@@ -39,24 +40,54 @@ class App():
         self.running = False
         self.step = 0
         self.lifegame_initizalized = False
-        self.loop()
+        # self.loop()
         self.root.mainloop()
 
     def init_UI(self):
-        # Animation frames
-        print(self.width, self.height)
-        self.frame_animation = tk.Frame(self.root, width=(self.width-100), height=self.height)
-        self.frame_animation.grid(row=0, column=0, sticky='nw')
-        self.root.grid_columnconfigure(0, weight = 1)
-        # canvas
-        self.canvas_width = self.width-100
-        self.canvas = tk.Canvas(self.frame_animation, width=self.canvas_width, height=self.height, bg="gray")
-        self.canvas.grid(column=0, row=0)
+        treeview_frame = tk.Frame(self.root, background="#FFF0C1", bd=1, relief="sunken")
+        graph_frame = tk.Frame(self.root, background="#D2E2FB", bd=1, relief="sunken")
+        text_frame = tk.Frame(self.root, background="#CCE4CA", bd=1, relief="sunken")
+        button_frame = tk.Frame(self.root, background="#F5C2C1", bd=1, relief="sunken")
         
-        self.UI_animation()
-        self.UI_anti_pattern()
-        self.UI_lifegame()
-        self.UI_size()
+        treeview_frame.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
+        graph_frame.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
+        text_frame.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=2, pady=2)
+        button_frame.grid(row=0, column=2, rowspan=2, sticky="nsew", padx=2, pady=2)
+        
+        self.root.grid_rowconfigure(0, weight=3)
+        self.root.grid_rowconfigure(1, weight=2)
+        
+        self.root.grid_columnconfigure(0, weight=3)
+        self.root.grid_columnconfigure(1, weight=2)
+        self.root.grid_columnconfigure(2, weight=2)
+        # create frames
+        # self.animation_frame = tk.Frame(self.root, background="#FFF0C1", bd=1, relief="sunken")
+        # self.antiPattern_frame = tk.Frame(self.root, bd=1)
+        # self.lifegame_neighbours_frame = tk.Frame(self.root, bd=1)
+        # self.lifegame_n_cells_frame = tk.Frame(self.root, bd=1)
+        # self.animation_controls_frame = tk.Frame(self.root, bd=1)
+        # # Put frames in grid
+        # n_columns_control_frame = 4
+        # self.animation_frame.grid(row=0, column=0, rowspan=n_columns_control_frame, sticky='nw')
+        # self.antiPattern_frame.grid(row=0, column=1, sticky='nw')
+        # self.lifegame_neighbours_frame.grid(row=2, column=1, sticky='nw')
+        # self.lifegame_n_cells_frame.grid(row=3, column=1, sticky='nw')
+        # self.animation_controls_frame.grid(row=4, column=1, sticky='nw')
+        # # Determine size of frames
+        # l_animation = 9
+        # l_controls = 1
+        
+        # self.root.grid_columnconfigure(0, weight=l_animation)
+        # self.root.grid_columnconfigure(1, weight=l_controls)
+        
+        # self.root.grid_rowconfigure(0, weight=3)
+        # self.root.grid_rowconfigure(1, weight=2)
+        
+        
+        # self.UI_animation()
+        # self.UI_anti_pattern()
+        # self.UI_lifegame()
+        # self.UI_size()
 
     def UI_animation(self):
         # controls frame
@@ -75,7 +106,7 @@ class App():
         
     def UI_n_neighbours(self):
         # self.n_neighbours = ["1", "2","3","4","5", "6","7", "8"]
-        
+        self.frame_n_neighbours = tk.Frame()
         pos_center = [17,1]
               
         self.buttons_alive = []
