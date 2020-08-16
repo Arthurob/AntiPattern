@@ -44,50 +44,39 @@ class App():
         self.root.mainloop()
 
     def init_UI(self):
-        treeview_frame = tk.Frame(self.root, background="#FFF0C1", bd=1, relief="sunken")
-        graph_frame = tk.Frame(self.root, background="#D2E2FB", bd=1, relief="sunken")
-        text_frame = tk.Frame(self.root, background="#CCE4CA", bd=1, relief="sunken")
-        button_frame = tk.Frame(self.root, background="#F5C2C1", bd=1, relief="sunken")
-        
-        treeview_frame.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
-        graph_frame.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
-        text_frame.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=2, pady=2)
-        button_frame.grid(row=0, column=2, rowspan=2, sticky="nsew", padx=2, pady=2)
-        
-        self.root.grid_rowconfigure(0, weight=3)
-        self.root.grid_rowconfigure(1, weight=2)
-        
-        self.root.grid_columnconfigure(0, weight=3)
-        self.root.grid_columnconfigure(1, weight=2)
-        self.root.grid_columnconfigure(2, weight=2)
+
         # create frames
-        # self.animation_frame = tk.Frame(self.root, background="#FFF0C1", bd=1, relief="sunken")
-        # self.antiPattern_frame = tk.Frame(self.root, bd=1)
-        # self.lifegame_neighbours_frame = tk.Frame(self.root, bd=1)
-        # self.lifegame_n_cells_frame = tk.Frame(self.root, bd=1)
-        # self.animation_controls_frame = tk.Frame(self.root, bd=1)
-        # # Put frames in grid
-        # n_columns_control_frame = 4
-        # self.animation_frame.grid(row=0, column=0, rowspan=n_columns_control_frame, sticky='nw')
-        # self.antiPattern_frame.grid(row=0, column=1, sticky='nw')
-        # self.lifegame_neighbours_frame.grid(row=2, column=1, sticky='nw')
-        # self.lifegame_n_cells_frame.grid(row=3, column=1, sticky='nw')
-        # self.animation_controls_frame.grid(row=4, column=1, sticky='nw')
-        # # Determine size of frames
-        # l_animation = 9
-        # l_controls = 1
+        self.animation_frame = tk.Frame(self.root, bd=1, relief="sunken")
+        self.antiPattern_frame = tk.Frame(self.root, bd=1, relief="sunken")
+        self.lifegame_neighbours_frame = tk.Frame(self.root, bd=1, relief="sunken")
+        self.lifegame_n_cells_frame = tk.Frame(self.root, bd=1, relief="sunken")
+        self.animation_controls_frame = tk.Frame(self.root, bd=1, relief="sunken")
+        # Put frames in grid
+        n_columns_control_frame = 4
+        self.animation_frame.grid(row=0, column=0, rowspan=n_columns_control_frame, sticky='nsew')
+        self.antiPattern_frame.grid(row=0, column=1, sticky='nsew')
+        self.lifegame_neighbours_frame.grid(row=1, column=1, sticky='nsew')
+        self.lifegame_n_cells_frame.grid(row=2, column=1, sticky='nsew')
+        self.animation_controls_frame.grid(row=3, column=1, sticky='nsew')
+        # Determine size of frames
+        l_animation = 9
+        l_controls = 1
         
-        # self.root.grid_columnconfigure(0, weight=l_animation)
-        # self.root.grid_columnconfigure(1, weight=l_controls)
+        self.root.grid_columnconfigure(0,weight= l_animation)# weight=l_animation)
+        self.root.grid_columnconfigure(1,weight= l_controls)#weight=l_controls)
         
-        # self.root.grid_rowconfigure(0, weight=3)
-        # self.root.grid_rowconfigure(1, weight=2)
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_rowconfigure(2, weight=1)
+        self.root.grid_rowconfigure(3, weight=1)
         
+        self.canvas_width = self.width-100
+        self.canvas = tk.Canvas(self.animation_frame) #, width=self.canvas_width, height=self.height, bg="gray")
+        self.canvas.grid(column=0, row=0)
         
+        self.anti_pattern_UI()
+        self.lifegame_UI()
         # self.UI_animation()
-        # self.UI_anti_pattern()
-        # self.UI_lifegame()
-        # self.UI_size()
 
     def UI_animation(self):
         # controls frame
@@ -141,7 +130,7 @@ class App():
             self.dict_buttons[neighbour].configure(relief=tk.SUNKEN)
 
 
-    def UI_lifegame(self):
+    def lifegame_UI(self):
         self.UI_n_neighbours()
         self.UI_neighbours_buttons()
         
@@ -166,65 +155,67 @@ class App():
 
     def UI_n(self):
          # n
-        self.lbl_n = tk.Label(self.frame_controls, text="n = ")
-        self.lbl_n.grid(column=0, row=4, sticky='e')
+        self.lbl_n = tk.Label(self.antiPattern_frame, text="n = ")
+        self.lbl_n.grid(column=0, row=0, sticky='nsew')
 
-        self.button_nis2 = tk.Button(self.frame_controls, text="2")
+        self.button_nis2 = tk.Button(self.antiPattern_frame, text="2")
         self.button_nis2.configure(command=lambda button = self.button_nis2: self.pressed_n(button))
-        self.button_nis2.grid(column=2, row=4, sticky='w')
+        self.button_nis2.grid(column=1, row=0, sticky='w')
 
-        self.button_nis3 = tk.Button(self.frame_controls, text="3")
+        self.button_nis3 = tk.Button(self.antiPattern_frame, text="3")
         self.button_nis3.configure(command=lambda button = self.button_nis3: self.pressed_n(button))
-        self.button_nis3.grid(column=3, row=4, sticky='w')
+        self.button_nis3.grid(column=2, row=0, sticky='w')
 
-        self.button_nis4 = tk.Button(self.frame_controls, text="4")
+        self.button_nis4 = tk.Button(self.antiPattern_frame, text="4")
         self.button_nis4.configure(command=lambda button = self.button_nis4: self.pressed_n(button))
-        self.button_nis4.grid(column=4, row=4, sticky='w')
+        self.button_nis4.grid(column=3, row=0, sticky='w')
 
-    def UI_anti_pattern(self):
+    def anti_pattern_UI(self):
         self.UI_n()
         
          # n_patterns_power_horizontal
-        self.lbl_n_patterns_power_horizontal = tk.Label(self.frame_controls, text="n powers horizontal = ")
-        self.lbl_n_patterns_power_horizontal.grid(column=1, row=5, sticky='w')
-        self.txt_n_patterns_power_horizontal = tk.Entry(self.frame_controls, width=5)
-        self.txt_n_patterns_power_horizontal.grid(column=2, row=5, sticky='w')
+        self.lbl_n_patterns_power_horizontal = tk.Label(self.antiPattern_frame, text="n powers horizontal = ")
+        self.lbl_n_patterns_power_horizontal.grid(column=0, row=1, sticky='w')
+        self.txt_n_patterns_power_horizontal = tk.Entry(self.antiPattern_frame, width=5)
+        self.txt_n_patterns_power_horizontal.grid(column=1, row=1, sticky='w', columnspan =3)
         
         # Shuffle
         self.shuffle = False
-        self.button_shuffle = tk.Button(self.frame_controls, text="shuffle")
+        self.button_shuffle = tk.Button(self.antiPattern_frame, text="shuffle")
         self.button_shuffle.configure(command=self.pressed_shuffle)
         self.button_shuffle.configure(relief=tk.RAISED)
-        self.button_shuffle.grid(column=1, row=20, sticky='w')
+        self.button_shuffle.grid(column=0, row=2, sticky='w')
                 # init antipattern
-        self.init_lifegame = tk.Button(self.frame_controls, text="initialize lifegame", command=self.init_lifegame)
-        self.init_lifegame.grid(column=1, row=16, sticky='w')
+        self.init_lifegame = tk.Button(self.antiPattern_frame, text="initialize lifegame", command=self.init_lifegame)
+        self.init_lifegame.grid(column=0, row=3, sticky='w')
+        
+        self.UI_size()
 
 
     def UI_size(self):
 
     # rows
-        self.lbl_rows = tk.Label(self.frame_controls, text="rows = ")
-        self.lbl_rows.grid(column=1, row=6, sticky='w')
-        self.txt_rows = tk.Entry(self.frame_controls, width=5)
-        self.txt_rows.grid(column=2, row=6, sticky='w')
+        self.lbl_rows = tk.Label(self.antiPattern_frame, text="rows = ")
+        self.lbl_rows.grid(column=0, row=4, sticky='w')
+        self.txt_rows = tk.Entry(self.antiPattern_frame, width=5)
+        self.txt_rows.grid(column=1, row=4, sticky='w', columnspan =3)
         # Columns
-        self.lbl_columns = tk.Label(self.frame_controls,text="columns = ")
-        self.lbl_columns.grid(column=1, row=7, sticky='w')
-        self.txt_columns = tk.Entry(self.frame_controls, width=5)
-        self.txt_columns.grid(column=2, row=7, sticky='w')
+        self.lbl_columns = tk.Label(self.antiPattern_frame,text="columns = ")
+        self.lbl_columns.grid(column=0, row=5, sticky='w')
+        self.txt_columns = tk.Entry(self.antiPattern_frame, width=5)
+        self.txt_columns.grid(column=1, row=5, sticky='w', columnspan =3)
 
         # margin
-        self.lbl_cell_margin = tk.Label(self.frame_controls,text="cell margin = ")
-        self.lbl_cell_margin.grid(column=1, row=8, sticky='w')
-        self.txt_cell_margin = tk.Entry(self.frame_controls, width=5)
-        self.txt_cell_margin.grid(column=2, row=8, sticky='w')
+        self.lbl_cell_margin = tk.Label(self.antiPattern_frame,text="cell margin = ")
+        self.lbl_cell_margin.grid(column=0, row=6, sticky='w')
+        self.txt_cell_margin = tk.Entry(self.antiPattern_frame, width=5)
+        self.txt_cell_margin.grid(column=1, row=6, sticky='w', columnspan =3)
 
         # cell  size
-        self.lbl_cell_size = tk.Label(self.frame_controls,text="cell size = ")
-        self.lbl_cell_size.grid(column=1, row=9, sticky='w')
-        self.txt_cell_size = tk.Entry(self.frame_controls, width=5)
-        self.txt_cell_size.grid(column=2, row=9, sticky='w')
+        self.lbl_cell_size = tk.Label(self.antiPattern_frame,text="cell size = ")
+        self.lbl_cell_size.grid(column=0, row=7, sticky='w')
+        self.txt_cell_size = tk.Entry(self.antiPattern_frame, width=5)
+        self.txt_cell_size.grid(column=1, row=7, sticky='w', columnspan =3)
 
     def pressed_n(self, button):
 
