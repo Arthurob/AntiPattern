@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['life_game_indices.py', 'animate_frames_noThread.py', 'life_game.py', 'antipattern.py', 'animate_frames.py', 'animate.py', 'life_game_matrix.py', 'life_game_nodict.py', 'Test_life_game.py']
+recent_files = ['..\\CelestialObjects\\Animate_celestial_objects.py', 'Code\\animate_AP_LG.py']
 
